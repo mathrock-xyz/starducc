@@ -7,6 +7,7 @@ require (
 	github.com/labstack/echo/v4 v4.13.4
 	github.com/markbates/goth v1.82.0
 	github.com/spf13/cobra v1.10.1
+	gorm.io/gorm v1.31.1
 )
 
 require (
@@ -27,6 +28,8 @@ require (
 	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/gorilla/sessions v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/lucasb-eyer/go-colorful v1.3.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
