@@ -1,7 +1,8 @@
 package main
 
 import (
-	"errors"
+	"fmt"
+	"io"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -11,22 +12,40 @@ var up = &cobra.Command{
 	Use:   "up",
 	Short: "",
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		if args == nil {
-			return errors.New("")
+		if len(args) < 1 {
+			return fmt.Errorf("This command takes one argument")
 		}
 
 		name := args[0]
+
 		if name == "" {
-			return errors.New("")
+			return fmt.Errorf("This command takes one argument")
 		}
 
 		file, err := os.Stat(name)
+
 		if err != nil {
 			return
 		}
 
 		if file.IsDir() {
-			return errors.New("")
+			return fmt.Errorf("This command cannot accept folder")
 		}
+
+		descriptor, err := os.Open(name)
+		defer descriptor.Close()
+
+		if err != nil {
+			return
+		}
+
+		reader, writer := io.Pipe()
+
+		go func() {
+			defer writer.Close()
+			io.Copy(writer, descriptor)
+		}()
+
+		client.NewRequest().SetBody(reader)
 	},
 }

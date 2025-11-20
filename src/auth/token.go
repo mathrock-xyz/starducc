@@ -26,18 +26,23 @@ func createToken(email string) (string, error) {
 	return tokenString, nil
 }
 
-func verifyToken(tokenString string) error {
+func verifyToken(tokenString string) (id string, err error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return secret, nil
 	})
 
 	if err != nil {
-		return err
+		return
 	}
 
 	if !token.Valid {
-		return fmt.Errorf("invalid token")
+		return "", fmt.Errorf("invalid token")
 	}
 
-	return nil
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		id = claims["user_id"].(string)
+		return
+	}
+
+	return "", fmt.Errorf("invalid claims")
 }
