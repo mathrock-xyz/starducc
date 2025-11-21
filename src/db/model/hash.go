@@ -1,6 +1,6 @@
 package model
 
 type Hash struct {
-	Value  string
-	FileID string
+	Value string
+	Files []File `gorm:"foreignKey:HashID"`
 }

@@ -19,13 +19,11 @@ var up = &cobra.Command{
 		}
 
 		name := args[0]
-
 		if name == "" {
 			return fmt.Errorf("This command takes one argument")
 		}
 
 		file, err := os.Stat(name)
-
 		if err != nil {
 			return
 		}
@@ -38,12 +36,6 @@ var up = &cobra.Command{
 		defer descriptor.Close()
 
 		if err != nil {
-			return
-		}
-
-		hasher := sha256.New()
-
-		if _, err = io.Copy(hasher, descriptor); err != nil {
 			return
 		}
 
