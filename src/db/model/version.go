@@ -5,5 +5,7 @@ import "gorm.io/gorm"
 type FileVersion struct {
 	gorm.Model
 	Version int
-	FileID
+	Hash    string
+	Size    int64
+	FileID  string
 }
