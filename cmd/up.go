@@ -1,10 +1,7 @@
 package main
 
 import (
-	"crypto/sha256"
 	"fmt"
-	"hash"
-	"io"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -38,16 +35,5 @@ var up = &cobra.Command{
 		if err != nil {
 			return
 		}
-
-		req := client.NewRequest()
-
-		reader, writer := io.Pipe()
-
-		go func() {
-			defer writer.Close()
-			io.Copy(writer, descriptor)
-		}()
-
-		client.NewRequest().SetBody(reader)
 	},
 }
