@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os/user"
@@ -28,8 +29,8 @@ var signin = &cobra.Command{
 		errorf := ""
 
 		route.GET("/", func(c echo.Context) (err error) {
-			token := c.QueryParam("token")
-			if token == "" {
+			token, email := c.QueryParam("token"), c.QueryParam("email")
+			if token == "" && email == "" {
 				errorf = "token is empty"
 				return serv.Close()
 			}
@@ -40,7 +41,17 @@ var signin = &cobra.Command{
 				return serv.Close()
 			}
 
-			if err = keyring.Set("mathrock", usr.Name, token); err != nil {
+			cur := &current{
+				Email: email,
+				Token: token,
+			}
+
+			val, err := json.Marshal(cur)
+			if err != nil {
+				return
+			}
+
+			if err = keyring.Set("starducc", usr.Name, string(val)); err != nil {
 				errorf = err.Error()
 				return serv.Close()
 			}
