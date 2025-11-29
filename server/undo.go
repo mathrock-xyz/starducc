@@ -5,10 +5,10 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/labstack/echo/v4"
-	"github.com/mathrock-xyz/starducc/src/auth"
-	"github.com/mathrock-xyz/starducc/src/db"
-	"github.com/mathrock-xyz/starducc/src/db/model"
-	"github.com/mathrock-xyz/starducc/src/storage"
+	"github.com/mathrock-xyz/starducc/server/auth"
+	"github.com/mathrock-xyz/starducc/server/db"
+	"github.com/mathrock-xyz/starducc/server/db/model"
+	"github.com/mathrock-xyz/starducc/server/storage"
 )
 
 func undo(ctx echo.Context) (err error) {

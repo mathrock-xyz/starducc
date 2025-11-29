@@ -6,8 +6,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/markbates/goth/gothic"
-	"github.com/mathrock-xyz/starducc/src/db"
-	"github.com/mathrock-xyz/starducc/src/db/model"
+	"github.com/mathrock-xyz/starducc/server/db"
+	"github.com/mathrock-xyz/starducc/server/db/model"
 )
 
 func Callback(ctx echo.Context) (err error) {

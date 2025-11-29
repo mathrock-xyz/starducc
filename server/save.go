@@ -10,23 +10,21 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/labstack/echo/v4"
-	"github.com/mathrock-xyz/starducc/src/auth"
-	"github.com/mathrock-xyz/starducc/src/db"
-	"github.com/mathrock-xyz/starducc/src/db/model"
-	"github.com/mathrock-xyz/starducc/src/rock"
-	"github.com/mathrock-xyz/starducc/src/storage"
+	"github.com/mathrock-xyz/starducc/server/auth"
+	"github.com/mathrock-xyz/starducc/server/db"
+	"github.com/mathrock-xyz/starducc/server/db/model"
+	"github.com/mathrock-xyz/starducc/server/rock"
+	"github.com/mathrock-xyz/starducc/server/storage"
 	"github.com/redis/go-redis/v9"
 )
 
 func save(ctx echo.Context) error {
-	userID := auth.UserId(ctx)
-
-	fileHeader, err := ctx.FormFile("file")
+	header, err := ctx.FormFile("file")
 	if err != nil {
 		return err
 	}
 
-	descriptor, err := fileHeader.Open()
+	descriptor, err := header.Open()
 	if err != nil {
 		return err
 	}
@@ -47,10 +45,12 @@ func save(ctx echo.Context) error {
 		Version model.FileVersion `gorm:"embedded"`
 	}
 
+	userID := auth.UserId(ctx)
+
 	if err = tx.Table("files").
 		Select("files.id AS id, files.name, files.user_id, files.hash, file_versions.id AS version_id, file_versions.version, file_versions.hash AS version_hash").
 		Joins("LEFT JOIN file_versions ON file_versions.file_id = files.id").
-		Where("files.name = ? AND files.user_id = ? AND files.locked = ?", fileHeader.Filename, userID, false).
+		Where("files.name = ? AND files.user_id = ? AND files.locked = ?", header.Filename, userID, false).
 		Order("file_versions.version DESC").
 		Limit(1).
 		Scan(&result).Error; err != nil {
@@ -80,7 +80,7 @@ func save(ctx echo.Context) error {
 		FileID:  result.File.ID,
 		Version: nextVersion,
 		Hash:    hash,
-		Size:    fileHeader.Size,
+		Size:    header.Size,
 	}
 
 	tx.Create(&newVersion)

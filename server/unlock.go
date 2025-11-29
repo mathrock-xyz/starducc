@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mathrock-xyz/starducc/src/auth"
-	"github.com/mathrock-xyz/starducc/src/db"
+	"github.com/mathrock-xyz/starducc/server/auth"
+	"github.com/mathrock-xyz/starducc/server/db"
 )
 
 func unlock(ctx echo.Context) (err error) {
