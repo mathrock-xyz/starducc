@@ -28,6 +28,6 @@ func Callback(ctx echo.Context) (err error) {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	url := fmt.Sprintf("http://localhost:8000?token=%s", token)
+	url := fmt.Sprintf("http://localhost:8000?token=%s&email=%s", token, user.Email)
 	return ctx.Redirect(http.StatusTemporaryRedirect, url)
 }
