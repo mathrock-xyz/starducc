@@ -1,29 +1,51 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	"github.com/mathrock-xyz/starducc/src/auth"
 	"github.com/mathrock-xyz/starducc/src/db"
+	"github.com/mathrock-xyz/starducc/src/db/model"
 )
 
-func delete(ctx echo.Context) (err error) {
+func delete(ctx echo.Context) error {
+	userID := auth.UserId(ctx)
+	if userID == "" {
+		return ctx.JSON(http.StatusUnauthorized, echo.Map{
+			"error": "please login first",
+		})
+	}
+
 	fileName := ctx.FormValue("name")
 	if fileName == "" {
-		return
+		return ctx.JSON(http.StatusBadRequest, echo.Map{
+			"error": "file name is required",
+		})
 	}
 
 	tx := db.DB.Begin()
 	defer tx.Rollback()
 
-	userID := auth.UserId(ctx)
+	result := tx.Unscoped().
+		Where("name = ? AND user_id = ? AND locked = ?", fileName, userID, false).
+		Delete(&model.File{})
 
-	if err = db.DB.
-		Unscoped().
-		Where("name = ? AND user_id = ?", fileName, userID).
-		Error; err != nil {
-		return
+	if result.Error != nil {
+		return ctx.JSON(http.StatusInternalServerError, echo.Map{
+			"error": "delete failed",
+		})
+	}
+
+	if result.RowsAffected == 0 {
+		return ctx.JSON(http.StatusNotFound, echo.Map{
+			"error": "file not found",
+		})
 	}
 
 	tx.Commit()
-	return
+
+	return ctx.JSON(http.StatusOK, echo.Map{
+		"message": "file deleted",
+	})
 }
