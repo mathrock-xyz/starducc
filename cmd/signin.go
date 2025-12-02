@@ -7,7 +7,7 @@ import (
 	"os/user"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mathrock-xyz/starducc/cmd/rest"
+
 	"github.com/spf13/cobra"
 	"github.com/zalando/go-keyring"
 )
@@ -16,9 +16,9 @@ var signin = &cobra.Command{
 	Use:   "login",
 	Short: "Log in to your account",
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		if _, err = rest.Client.R().Get("http://starducc.mathrock.xyz"); err != nil {
+		/* if _, err = rest.Client.R().Get("http://starducc.mathrock.xyz"); err != nil {
 			return
-		}
+		} */
 
 		serv := &http.Server{
 			Addr: "localhost:8000",

@@ -1,11 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"mime/multipart"
+	"net/http"
 	"os"
 
 	"github.com/charmbracelet/log"
-	"github.com/mathrock-xyz/starducc/cmd/rest"
 	"github.com/spf13/cobra"
 )
 
@@ -38,23 +41,39 @@ var up = &cobra.Command{
 			return
 		}
 
-		res, err := rest.
-			Client.
-			R().
-			SetFileReader("file", file.Name(), descriptor).
-			Post("/")
+		var data bytes.Buffer
+		writer := multipart.NewWriter(&data)
+		defer writer.Close()
 
+		fw, err := writer.CreateFormField("file")
 		if err != nil {
 			return
 		}
 
-		response, err := rest.Parse(res)
+		if _, err = io.Copy(fw, descriptor); err != nil {
+			return
+		}
+
+		req, _ := http.NewRequest("POST", "http://app.starducc.mathrock.xyz", &data)
+
+		token, err := bearer()
 		if err != nil {
 			return
 		}
 
-		if response.Status == "error" {
-			return fmt.Errorf(response.Message)
+		req.Header.Set("Authorization", "Bearer "+token)
+
+		request := new(http.Client)
+
+		res, _ := request.Do(req)
+
+		if res.StatusCode != http.StatusOK {
+			msg, err := parse(res.Body)
+			if err != nil {
+				return err
+			}
+
+			return fmt.Errorf(msg)
 		}
 
 		log.Info("Succes")

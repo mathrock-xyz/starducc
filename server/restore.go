@@ -12,7 +12,7 @@ import (
 )
 
 func restore(ctx echo.Context) (err error) {
-	fileName := ctx.FormValue("name")
+	fileName := ctx.Param("name")
 	if fileName == "" {
 		return
 	}

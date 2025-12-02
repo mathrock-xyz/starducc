@@ -1,0 +1,14 @@
+up // upload file
+save // save changes
+rm // delete but can be restore
+delete // delete permanently 
+restore // download the latest file
+cp // copy specific file and version to the local
+revert // make specific to be version latest version
+undo // undo the latest changes
+lock // lock the file 
+unlock // unlock the file
+restore // download the latest file version
+history // print all the file version history
+info // info file
+ls // list all the files

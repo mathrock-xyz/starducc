@@ -87,16 +87,16 @@ func save(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to check file status")
 	}
 
-	nextVersion := result.Version.Version + 1
+	nextver := result.Version.Version + 1
 
-	newVersion := model.FileVersion{
+	newver := model.FileVersion{
 		FileID:  result.File.ID,
-		Version: nextVersion,
+		Version: nextver,
 		Hash:    hash,
 		Size:    header.Size,
 	}
 
-	if err := tx.Create(&newVersion).Error; err != nil {
+	if err := tx.Create(&newver).Error; err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to save new file version")
 	}
 
@@ -108,7 +108,7 @@ func save(ctx echo.Context) error {
 
 	return ctx.JSON(http.StatusOK, echo.Map{
 		"message": "file updated",
-		"version": nextVersion,
+		"version": nextver,
 		"hash":    hash,
 	})
 }
