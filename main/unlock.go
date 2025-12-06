@@ -1,27 +1,47 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
-	"github.com/mathrock-xyz/starducc/server/auth"
-	"github.com/mathrock-xyz/starducc/server/db"
+	"github.com/mathrock-xyz/starducc/main/auth"
+	"github.com/mathrock-xyz/starducc/main/db"
 )
 
 func unlock(ctx echo.Context) (err error) {
-	fileName := ctx.FormValue("name")
-	if fileName == "" {
-		return
+	userid, name := auth.UserId(ctx), ctx.FormValue("name")
+	if name == "" {
+		return echo.NewHTTPError(
+			http.StatusBadRequest,
+			"file name is required",
+		)
 	}
 
 	tx := db.DB.Begin()
 	defer tx.Rollback()
 
-	userID := auth.UserId(ctx)
+	// Update the 'locked' status to false
+	result := tx.Table("files").
+		Where("name = ? AND user_id = ?", name, userid).
+		Update("locked", false)
 
-	if err = tx.Where("name = ? AND user_id = ?", fileName, userID).
-		Set("locked", false).Error; err != nil {
-		return
+	if result.Error != nil {
+		return echo.NewHTTPError(
+			http.StatusInternalServerError,
+			"failed to unlock file in database",
+		)
+	}
+
+	// Check if any row was affected
+	if result.RowsAffected == 0 {
+		return echo.NewHTTPError(
+			http.StatusNotFound, "file not found",
+		)
 	}
 
 	tx.Commit()
-	return
+
+	return ctx.JSON(http.StatusOK, echo.Map{
+		"message": "file successfully unlocked",
+	})
 }

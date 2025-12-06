@@ -8,7 +8,6 @@ revert // make specific to be version latest version
 undo // undo the latest changes
 lock // lock the file 
 unlock // unlock the file
-restore // download the latest file version
 history // print all the file version history
 info // info file
 ls // list all the files

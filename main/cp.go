@@ -15,8 +15,11 @@ import (
 
 func cp(ctx echo.Context) (err error) {
 	userid, name, ver := auth.UserId(ctx), ctx.Param("name"), ctx.Param("version")
-	if name == "" && ver == "" {
-		return
+	if name == "" || ver == "" {
+		return echo.NewHTTPError(
+			http.StatusBadRequest,
+			"file name and version are required",
+		)
 	}
 
 	tx := db.DB.Begin()
@@ -27,6 +30,7 @@ func cp(ctx echo.Context) (err error) {
 		Version model.Version `gorm:"embedded"`
 	}
 
+	// query the specific file version record
 	if err = db.DB.Table("files").
 		Select("files.id AS id, files.name, files.user_id, files.hash, file_versions.id AS version_id, file_versions.version, file_versions.hash AS version_hash, file_versions.size").
 		Joins("INNER JOIN file_versions ON file_versions.file_id = files.id").
@@ -34,14 +38,28 @@ func cp(ctx echo.Context) (err error) {
 		Limit(1).
 		Scan(&result).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return echo.NewHTTPError(http.StatusNotFound, "File or specific version not found")
+			return echo.NewHTTPError(
+				http.StatusNotFound,
+				"File or specific version not found",
+			)
 		}
-		return err
+		return echo.NewHTTPError(
+			http.StatusInternalServerError,
+			"database query failed",
+		)
 	}
 
+	// fetch the object from S3 storage using the version hash
 	object, err := storage.Box.GetObject(ctx.Request().Context(), &s3.GetObjectInput{
 		Key: &result.Version.Hash,
 	})
+	if err != nil {
+		return echo.NewHTTPError(
+			http.StatusInternalServerError,
+			"failed to retrieve file from storage",
+		)
+	}
 
-	return ctx.Stream(7, "", object.Body)
+	// stream the file content back to the client
+	return ctx.Stream(http.StatusOK, "application/octet-stream", object.Body)
 }

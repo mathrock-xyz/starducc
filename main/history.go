@@ -1,28 +1,46 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mathrock-xyz/starducc/src/db"
-	"github.com/mathrock-xyz/starducc/src/db/model"
+	"github.com/mathrock-xyz/starducc/main/auth"
+	"github.com/mathrock-xyz/starducc/main/db"
+	"github.com/mathrock-xyz/starducc/main/db/model"
+	"gorm.io/gorm"
 )
 
 func history(ctx echo.Context) (err error) {
-	name := ctx.FormValue("name")
-	if name == "" {
-		return
-	}
+	userid, name := auth.UserId(ctx), ctx.FormValue("name")
 
-	tx := db.DB.Begin()
-	defer tx.Rollback()
+	if name == "" {
+		return echo.NewHTTPError(
+			http.StatusBadRequest,
+			"file name is required",
+		)
+	}
 
 	file := new(model.File)
-	if err = tx.Where("name = ? AND user_id = ?").
+
+	// query the file record and preload its associated versions
+	if err = db.DB.Where("name = ? AND user_id = ?", name, userid).
 		Preload("versions").
 		First(&file).Error; err != nil {
-		return
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return echo.NewHTTPError(
+				http.StatusNotFound,
+				"file not found or does not belong to user",
+			)
+		}
+		// return 500 internal server error for other database errors
+		return echo.NewHTTPError(
+			http.StatusInternalServerError,
+			"database query failed",
+		)
 	}
 
+	// return the file versions (history) as JSON
 	return ctx.JSON(http.StatusOK, file.Versions)
 }
